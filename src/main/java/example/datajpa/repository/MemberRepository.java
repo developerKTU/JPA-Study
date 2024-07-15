@@ -1,5 +1,6 @@
 package example.datajpa.repository;
 
+import example.datajpa.dto.MemberDTO;
 import example.datajpa.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +28,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // 이 @Query 어노테이션은 쿼리에서 오타가 나면 컴파일러에서 오타를 잡아주기 때문에 에러파악이 용이함! (실무에 많이 쓰임! 중요!)
     @Query("select m from Member m where m.username = :username and m.age = :age")
     List<Member> findMember(@Param("username") String username, @Param("age") int age);
+
+    // username만 조회
+    @Query("select m.username from Member m")
+    List<String> findUsernameList();
+
+    // DTO 이용
+    @Query("select new example.datajpa.dto.MemberDTO(m.id, m.username, t.name) from Member m join m.team t")
+    List<MemberDTO> findMemberDTO();
 }

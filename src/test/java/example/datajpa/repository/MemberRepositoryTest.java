@@ -1,6 +1,8 @@
 package example.datajpa.repository;
 
+import example.datajpa.dto.MemberDTO;
 import example.datajpa.entity.Member;
+import example.datajpa.entity.Team;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ class MemberRepositoryTest {
 
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    TeamRepository teamRepository;
 
     @Test
     public void testMember(){
@@ -99,5 +103,36 @@ class MemberRepositoryTest {
         List<Member> result = memberRepository.findMember("M2", 20);
 
         Assertions.assertThat(result.get(0).getUsername()).isEqualTo("M2");
+    }
+
+    @Test
+    public void findUsernameList (){
+        Member m1 = new Member("M1", 10);
+        Member m2 = new Member("M2", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<String> result = memberRepository.findUsernameList();
+
+        // 실무에선 Assert 사용
+        for (String s : result) {
+            System.out.println("username = " + s);
+        }
+    }
+
+    @Test
+    public void findMemberDTO (){
+        Team team1 = new Team("Team1");
+        teamRepository.save(team1);
+
+        Member m1 = new Member("M1", 10, team1);
+        memberRepository.save(m1);
+
+        List<MemberDTO> result = memberRepository.findMemberDTO();
+
+        // 실무에선 Assert 사용
+        for (MemberDTO memberDTO : result) {
+            System.out.println("DTO = " + memberDTO);
+        }
     }
 }
