@@ -5,6 +5,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 // 개발자가 직접 구현한 JPA 구현체
 // 인터페이스 생성 후 JpaRepository 인터페이스를 상속받아 사용하면 이런 구현체를 가져다가 쓸 수 있다! (Spring Data JPA 내장 구현체)
 @Repository
@@ -15,11 +18,37 @@ public class MemberJpaRepository {
     @PersistenceContext
     private EntityManager em;
 
+    // CREAT
     public Member save(Member member){
         em.persist(member);
         return member;
     }
 
+    // DELETE
+    public void delete(Member member){
+        em.remove(member);
+    }
+
+    // 전체 조회
+    public List<Member> findAll(){
+        //JPQL -> 테이블 대상이 아닌 객체를 대상으로 하는 쿼리
+        return em.createQuery("select m from Member m", Member.class)
+                .getResultList();
+    }
+
+    // 조건 조회
+    public Optional<Member> findById(long id){
+        Member member = em.find(Member.class, id);
+        return Optional.ofNullable(member);
+    }
+
+    // 카운트 조회
+    public long count(){
+        return em.createQuery("select count(m) from Member m", Long.class)
+                .getSingleResult();
+    }
+
+    // 단건 조회
     public Member find(Long id){
         return em.find(Member.class, id);
     }
