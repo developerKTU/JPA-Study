@@ -65,6 +65,27 @@ class MemberRepositoryTest {
 
         long deletedCount = memberRepository.count();
         Assertions.assertThat(deletedCount).isEqualTo(0);
+    }
 
+    @Test
+    public void findByUsernameAndAgeGreaterThen (){
+        Member m1 = new Member("M1", 10);
+        Member m2 = new Member("M2", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        // JPARepository 인터페이스를 상속받은 memberRepository에서 findByUsernameAndAgeGreaterThan 이름의 메소드를 정의하면
+        // 메소드 이름에 맞는 쿼리가 실행됨
+        List<Member> result = memberRepository.findByUsernameAndAgeGreaterThan("M2", 15);
+
+        Assertions.assertThat(result.get(0).getUsername()).isEqualTo("M2");
+        Assertions.assertThat(result.get(0).getAge()).isEqualTo(20);
+        Assertions.assertThat(result.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void findTop3By (){
+        // 쿼리가 조건에 맞게 실행되는지만 확인
+        List<Member> result = memberRepository.findTop3By();
     }
 }
