@@ -88,4 +88,16 @@ class MemberRepositoryTest {
         // 쿼리가 조건에 맞게 실행되는지만 확인
         List<Member> result = memberRepository.findTop3By();
     }
+
+    @Test
+    public void queryAnnoTest (){
+        Member m1 = new Member("M1", 10);
+        Member m2 = new Member("M2", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findMember("M2", 20);
+
+        Assertions.assertThat(result.get(0).getUsername()).isEqualTo("M2");
+    }
 }
