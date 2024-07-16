@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -133,6 +134,21 @@ class MemberRepositoryTest {
         // 실무에선 Assert 사용
         for (MemberDTO memberDTO : result) {
             System.out.println("DTO = " + memberDTO);
+        }
+    }
+
+    @Test
+    public void findNames (){
+        Member m1 = new Member("M1", 10);
+        Member m2 = new Member("M2", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findByNames(Arrays.asList("M1", "M2"));
+
+        // 실무에선 Assert 사용
+        for (Member member : result) {
+            System.out.println("member = " + member);
         }
     }
 }

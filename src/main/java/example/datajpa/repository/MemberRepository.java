@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 // JpaRepository 인터페이스만 상속받아주면 (상속받는것도 인터페이스) 구현체를 Spring Data JPA가 다 제공해준다. (Spring Data JPA의 힘!)
@@ -26,6 +27,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // Repository에 문자열로 쿼리를 작성하면(createQuery) 오타가 나도 컴파일러에서 오타를 잡아낼 수 없음
         // -> 이렇게 되면 고객이 해당 버튼을 눌렀을때 그때서야 에러가남 (큰일)
     // 이 @Query 어노테이션은 쿼리에서 오타가 나면 컴파일러에서 오타를 잡아주기 때문에 에러파악이 용이함! (실무에 많이 쓰임! 중요!)
+    // :username, :age는 파라미터 바인딩이다.
     @Query("select m from Member m where m.username = :username and m.age = :age")
     List<Member> findMember(@Param("username") String username, @Param("age") int age);
 
@@ -36,4 +38,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // DTO 이용
     @Query("select new example.datajpa.dto.MemberDTO(m.id, m.username, t.name) from Member m join m.team t")
     List<MemberDTO> findMemberDTO();
+
+    // 컬렉션 파라미터 바인딩
+    @Query("select m from Member m where m.username in :names")
+    List<Member> findByNames(@Param("names") Collection<String> names);
 }
