@@ -82,4 +82,30 @@ class MemberJpaRepositoryTest {
         Assertions.assertThat(result.get(0).getAge()).isEqualTo(20);
         Assertions.assertThat(result.size()).isEqualTo(1);
     }
+
+    @Test
+    public void pagingTest(){
+        // given
+        memberJpaRepository.save(new Member("M1", 10));
+        memberJpaRepository.save(new Member("M2", 10));
+        memberJpaRepository.save(new Member("M3", 10));
+        memberJpaRepository.save(new Member("M4", 10));
+        memberJpaRepository.save(new Member("M5", 10));
+
+        int age = 10;
+        int offset = 0;
+        int limit = 3;
+
+        // when
+        List<Member> members = memberJpaRepository.findByPage(age, offset, limit);
+        long totalCount = memberJpaRepository.totalCount(age);
+
+
+        // 페이징 계산 공식 적용...(Spring Data JPA는 지원해줌!)
+
+        // then
+        Assertions.assertThat(members.size()).isEqualTo(3);
+        Assertions.assertThat(totalCount).isEqualTo(5);
+
+    }
 }
