@@ -27,7 +27,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // @Query 어노테이션
     // Repository에 문자열로 쿼리를 작성하면(createQuery) 오타가 나도 컴파일러에서 오타를 잡아낼 수 없음
         // -> 이렇게 되면 고객이 해당 버튼을 눌렀을때 그때서야 에러가남 (큰일)
-    // 이 @Query 어노테이션은 쿼리에서 오타가 나면 컴파일러에서 오타를 잡아주기 때문에 에러파악이 용이함! (실무에 많이 쓰임! 중요!)
+    // 이 @Query 어노테이션은 쿼리에서 오타가 나면 컴파일러에서 오타를 잡아주기 때문에 에러 파악이 용이함! (실무에 많이 쓰임! 중요!)
     // :username, :age는 파라미터 바인딩이다.
     @Query("select m from Member m where m.username = :username and m.age = :age")
     List<Member> findMember(@Param("username") String username, @Param("age") int age);
