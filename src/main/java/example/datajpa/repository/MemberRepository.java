@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 // JpaRepository 인터페이스만 상속받아주면 (상속받는것도 인터페이스) 구현체를 Spring Data JPA가 다 제공해준다. (Spring Data JPA의 힘!)
 // JPARepository 인터페이스를 상속받으면 @Repository 생략 가능
@@ -42,4 +43,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // 컬렉션 파라미터 바인딩
     @Query("select m from Member m where m.username in :names")
     List<Member> findByNames(@Param("names") Collection<String> names);
+
+    // 반환타입 (Spring JPA는 유연한 반환타입을 지원!)
+    List<Member> findByUsername(String username);       // 반환타입 : 컬렉션
+    Member findMemberByUsername(String username);       // 반환타입 : Member(단건)
+    Optional<Member> findOptionalByUsername(String username);    // 반환타입 : Optional(단건)
+
 }
