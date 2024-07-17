@@ -1,7 +1,6 @@
 package example.datajpa.repository;
 
 import example.datajpa.entity.Member;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,6 +8,8 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 // Junit5 + Stringboot 조합에선 @SpringBootTest 어노테이션만 명시해도 됨
 @SpringBootTest
@@ -31,9 +32,9 @@ class MemberJpaRepositoryTest {
 
         // 검증
         // isEqualTo는 '=='과 같다. 테이블은 같은 트랜잭션 내에서 이루어져야하기 때문에 member와 findMember는 같은 인스턴스로 취급한다.
-        Assertions.assertThat(findMember.getId()).isEqualTo(member.getId());
-        Assertions.assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
-        Assertions.assertThat(findMember).isEqualTo(member);
+        assertThat(findMember.getId()).isEqualTo(member.getId());
+        assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
+        assertThat(findMember).isEqualTo(member);
     }
 
     @Test
@@ -49,23 +50,23 @@ class MemberJpaRepositoryTest {
         Member findMember1 = memberJpaRepository.findById(member1.getId()).get();
         Member findMember2 = memberJpaRepository.findById(member2.getId()).get();
 
-        Assertions.assertThat(findMember1).isEqualTo(member1);
-        Assertions.assertThat(findMember2).isEqualTo(member2);
+        assertThat(findMember1).isEqualTo(member1);
+        assertThat(findMember2).isEqualTo(member2);
 
         // 리스트 조회 검증
         List<Member> all = memberJpaRepository.findAll();
-        Assertions.assertThat(all.size()).isEqualTo(2);
+        assertThat(all.size()).isEqualTo(2);
 
         // 카운트 검증
         long count = memberJpaRepository.count();
-        Assertions.assertThat(count).isEqualTo(2);
+        assertThat(count).isEqualTo(2);
 
         // 삭제 검증
         memberJpaRepository.delete(member1);
         memberJpaRepository.delete(member2);
 
         long deletedCount = memberJpaRepository.count();
-        Assertions.assertThat(deletedCount).isEqualTo(0);
+        assertThat(deletedCount).isEqualTo(0);
 
     }
 
@@ -78,9 +79,9 @@ class MemberJpaRepositoryTest {
 
         List<Member> result = memberJpaRepository.findByUsernameAndAgeGreaterThan("M2", 15);
 
-        Assertions.assertThat(result.get(0).getUsername()).isEqualTo("M2");
-        Assertions.assertThat(result.get(0).getAge()).isEqualTo(20);
-        Assertions.assertThat(result.size()).isEqualTo(1);
+        assertThat(result.get(0).getUsername()).isEqualTo("M2");
+        assertThat(result.get(0).getAge()).isEqualTo(20);
+        assertThat(result.size()).isEqualTo(1);
     }
 
     @Test
@@ -104,8 +105,25 @@ class MemberJpaRepositoryTest {
         // 페이징 계산 공식 적용...(Spring Data JPA는 지원해줌!)
 
         // then
-        Assertions.assertThat(members.size()).isEqualTo(3);
-        Assertions.assertThat(totalCount).isEqualTo(5);
+        assertThat(members.size()).isEqualTo(3);
+        assertThat(totalCount).isEqualTo(5);
+
+    }
+
+    @Test
+    public void bulkUpdate(){
+        // given
+        memberJpaRepository.save(new Member("M1", 10));
+        memberJpaRepository.save(new Member("M2", 19));
+        memberJpaRepository.save(new Member("M3", 20));
+        memberJpaRepository.save(new Member("M4", 21));
+        memberJpaRepository.save(new Member("M5", 40));
+
+        // when
+        int resultCount = memberJpaRepository.bulkAgePlus(20);
+
+        // then
+        assertThat(resultCount).isEqualTo(3);
 
     }
 }

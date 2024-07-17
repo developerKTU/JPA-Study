@@ -3,6 +3,8 @@ package example.datajpa.repository;
 import example.datajpa.dto.MemberDTO;
 import example.datajpa.entity.Member;
 import example.datajpa.entity.Team;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -30,6 +33,8 @@ class MemberRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember(){
@@ -221,6 +226,27 @@ class MemberRepositoryTest {
         Assertions.assertThat(page.isFirst()).isTrue();
         // 다음 페이지가 존재하는가? true
         Assertions.assertThat(page.hasNext()).isTrue();
+
+    }
+
+    @Test
+    public void bulkUpdate(){
+        // given
+        memberRepository.save(new Member("M1", 10));
+        memberRepository.save(new Member("M2", 19));
+        memberRepository.save(new Member("M3", 20));
+        memberRepository.save(new Member("M4", 21));
+        memberRepository.save(new Member("M5", 40));
+
+        // when
+        int resultCount = memberRepository.bulkAgePlus(20);
+
+        List<Member> result = memberRepository.findByUsername("M5");
+        Member member5 = result.get(0);
+        System.out.println("member5 = " + member5);
+
+        // then
+        assertThat(resultCount).isEqualTo(3);
 
     }
 }

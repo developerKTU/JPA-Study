@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -60,5 +61,17 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Page<Member> findByAge(int age, Pageable pageable);
     // Page를 Slice로 변환
     //Slice<Member> findByAge(int age, Pageable pageable);
+
+    // 벌크성 수정 쿼리 : 한 건 한 건 조회하여 그 데이터를 업데이트하기 보다는 전체 데이터 (테이블)에 대해서 업데이트를 해야할 경우
+    // bulk 수정 쿼리를 수행하게되면 바로 DB에 update를 치기때문에 영속성 컨텍스트는 이를 모르는 상태이다.
+    // 이 상태에서 테스트를 해보면 콘솔에는 update 전 데이터가 나온다.
+    // 따라서 bulk update 수행 후 영속성 컨텍스트를 날려버려야한다. (claarAutomatically = true)
+    // JPQL은 DB에 먼저 플러쉬 후 JPQL이 실행된다. (bulk 연산 예외)
+    // JPA와 Mybatis를 섞어서 사용할 경우 이러한 JPA는 Mybatis에서 한 연산을 인식못하기 때문에 클리어 작업이 필요함.
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Member m" +
+            "  SET m.age = m.age + 1" +
+            "WHERE m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
 
 }

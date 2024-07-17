@@ -77,4 +77,13 @@ public class MemberJpaRepository {
                 .getSingleResult();
     }
 
+    // 벌크성 수정 쿼리 : 한 건 한 건 조회하여 그 데이터를 업데이트하기 보다는 전체 데이터 (테이블)에 대해서 업데이트를 해야할 경우 (순수 JPA)
+    public int bulkAgePlus(int age){
+        return em.createQuery("UPDATE Member m " +
+                        "         SET m.age = m.age + 1 " +
+                        "       WHERE m.age >= :age")
+                .setParameter("age", age)
+                .executeUpdate();
+    }
+
 }
