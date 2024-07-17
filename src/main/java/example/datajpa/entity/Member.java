@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString(of = {"id", "username","age"})
 // Entity Graph에 이름을 부여할 수 있음
 @NamedEntityGraph(name = "Team.all", attributeNodes = @NamedAttributeNode("team"))
-public class Member {
+public class Member extends BaseEntity {
 
     @Id @GeneratedValue
     @Column(name = "member_id")
