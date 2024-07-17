@@ -16,7 +16,10 @@ import java.util.Optional;
 
 // JpaRepository 인터페이스만 상속받아주면 (상속받는것도 인터페이스) 구현체를 Spring Data JPA가 다 제공해준다. (Spring Data JPA의 힘!)
 // JPARepository 인터페이스를 상속받으면 @Repository 생략 가능
-public interface MemberRepository extends JpaRepository<Member, Long> {
+/* 사용자 정의 레포지토리 (MemberCustomRepository) : JPA 레포지토리 인터페이스만으로 해결이 안되는 복잡한 쿼리나 동적 쿼리 구현
+   또는 비즈니스 로직, 단순 화면 구현 로직 등으로 클래스(인터페이스)를 나눌때 사용자 정의 레포지토리를 사용한다.
+   (사용자 정의 레포지토리 + queryDSL 또는 Mybatis 조합으로 사용) */
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberCustomRepository {
 
     // 원하는 조회조건으로 SELECT (JpaRepository 인터페이스에서 지원하는 이름으로 메소드 작성)
     // findBy : 조회한다, Username : equal 조건, And : and, AgeGreaterThan : age가 파라미터보다 큰 조건

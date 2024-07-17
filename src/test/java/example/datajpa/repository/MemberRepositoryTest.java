@@ -30,8 +30,15 @@ class MemberRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     TeamRepository teamRepository;
+    private final MemberQueryRepository memberQueryRepository;
     @PersistenceContext
     EntityManager em;
+
+    // @AutoWired가 아닌 생성자 인젝션
+    @Autowired
+    public MemberRepositoryTest(MemberQueryRepository memberQueryRepository){
+        this.memberQueryRepository = memberQueryRepository;
+    }
 
     @Test
     public void testMember(){
@@ -355,4 +362,17 @@ class MemberRepositoryTest {
         List<Member> result = memberRepository.findLockByUsername("M1");
     }
 
+    @Test
+    public void callCustomRepositoryImpl(){
+
+        // MemberCustomRepositoryImpl의 구현메소드가 호출됨
+        List<Member> result = memberRepository.findMemberCustom();
+    }
+
+    @Test
+    public void callCustomRepositoryBean(){
+
+        // @Repository 빈에 등록된 MemberQueryRepository 사용자 레포지토리를 직접 주입하여 사용
+        List<Member> allMembers = memberQueryRepository.findAllMember();
+    }
 }
