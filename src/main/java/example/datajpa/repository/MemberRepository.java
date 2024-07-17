@@ -2,13 +2,12 @@ package example.datajpa.repository;
 
 import example.datajpa.dto.MemberDTO;
 import example.datajpa.entity.Member;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
@@ -110,4 +109,17 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // @EntityGraph 다른 사용 형태 3 -> Named Entitiy Graph (Member 엔티티의 @NamedEntityGraph 참고)
     @EntityGraph("Team.all")
     List<Member> findNaemdEGByUsername(@Param("username") String username);
+
+
+    // JPA Query Hint
+    // 진짜 복잡한 쿼리나 API를 사용할때만 최적화를 위해 넣는 것이지, 조회 기능에 무조건 다 넣어봤자 최적화가 크게 안된다. 성능테스트 후에 넣을지 말지 결정!
+    @QueryHints(value= @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUsername(String username);
+
+    // JPA Query Lock == select for update (LockModeType.PESSIMISTIC_WRITE --> JAVA JPA에서 제공
+    // select for update : DB 행 잠금 기술, 해당 트랜잭션이 종료될 때까지 다른 트랜잭션이 해당 레코드에 대한 수정을 방지함.
+    // 실시간 트래픽을 서비스하는 애플리케이션에선 잘 사용하지 않음.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Member> findLockByUsername(String username);
+
 }

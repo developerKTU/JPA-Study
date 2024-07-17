@@ -320,4 +320,39 @@ class MemberRepositoryTest {
         }
     }
 
+    @Test
+    public void queryHint(){
+
+        // given
+        Member member1 = new Member("M1", 10);
+        memberRepository.save(member1);
+
+        // 영속성 컨텍스트 클리어
+        em.flush();
+        em.clear();
+
+        // when
+        Member findMember = memberRepository.findReadOnlyByUsername("M1");
+
+        // readOnly가 true로 되어있기 때문에 변경감지 체크를 안함. 결국 업데이트 쿼리는 수행하지 않음.
+        //findMember.changeUserName("M2");
+
+    }
+
+    @Test
+    public void lockTest(){
+
+        // given
+        Member member1 = new Member("M1", 10);
+        memberRepository.save(member1);
+
+        // 영속성 컨텍스트 클리어
+        em.flush();
+        em.clear();
+
+        // when
+        // 실행 쿼리 끝에 'for update'라는 키워드가 붙게 된다. (Lock이 걸렸다는 의미)
+        List<Member> result = memberRepository.findLockByUsername("M1");
+    }
+
 }
