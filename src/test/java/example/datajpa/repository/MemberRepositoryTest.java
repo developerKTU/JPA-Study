@@ -7,6 +7,10 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -175,5 +179,48 @@ class MemberRepositoryTest {
         // 따라서 조회결과가 있을지 없을지 판단이 안될땐 null일때 경우도 처리할 수 있는 Optional을 사용함.
         // 조회되는 데이터가 2건 이상일때 optional을 사용하면 exception 발생
         Optional<Member> result3 = memberRepository.findOptionalByUsername("m3");
+    }
+
+    @Test
+    public void pagingTest(){
+        // given
+        memberRepository.save(new Member("M1", 10));
+        memberRepository.save(new Member("M2", 10));
+        memberRepository.save(new Member("M3", 10));
+        memberRepository.save(new Member("M4", 10));
+        memberRepository.save(new Member("M5", 10));
+
+        // Spring Data JPA의 페이징은 0부터 시작한다(주의!)
+        // '0' 페이지에서 '3개'의 데이터를 username DESC로 가져온다!
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+        int age = 10;
+
+        // when
+        // 이를 Controller에 바로 반환하면 큰일남! 엔티티는 외부에 노출시키면 안됨 무조건 애플리케이션 안에 숨겨야함! DTO를 통해서 리턴!
+        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+        // DTO  변환
+        Page<MemberDTO> toMap = page.map(m -> new MemberDTO(m.getId(), m.getUsername(), null));
+
+        //슬라이스로 변환
+        //Slice<Member> page = memberRepository.findByAge(age, pageRequest);
+
+        // Spring Data JPA에서 반환타입을 Page로 받으면 totalCount 쿼리까지 같이 실행해줌 -> 따라서 아래 코드는 필요없음
+        // long totalCount = memberRepository.totalCount(age);
+
+        // then
+        List<Member> contents = page.getContent();
+        long totalElements = page.getTotalElements();
+
+        // 현재 페이지의 데이터 갯수가 3개인가? true
+        Assertions.assertThat(contents.size()).isEqualTo(3);
+        // 총 데이터의 갯수는 5개인가? true
+        Assertions.assertThat(page.getTotalElements()).isEqualTo(5);    // Slice에선 지원 x
+        // 총 페이지 수는 2개인가? true (총 5개의 데이터에 3개씩 보여지므로 페이지는 2개가 나온다.)
+        Assertions.assertThat(page.getTotalPages()).isEqualTo(2);       // Slice에선 지원 x
+        // 첫번째 페이지인가? true
+        Assertions.assertThat(page.isFirst()).isTrue();
+        // 다음 페이지가 존재하는가? true
+        Assertions.assertThat(page.hasNext()).isTrue();
+
     }
 }

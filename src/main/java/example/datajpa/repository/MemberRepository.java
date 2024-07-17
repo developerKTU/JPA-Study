@@ -2,6 +2,9 @@ package example.datajpa.repository;
 
 import example.datajpa.dto.MemberDTO;
 import example.datajpa.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -48,5 +51,14 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findByUsername(String username);       // 반환타입 : 컬렉션
     Member findMemberByUsername(String username);       // 반환타입 : Member(단건)
     Optional<Member> findOptionalByUsername(String username);    // 반환타입 : Optional(단건)
+
+    // Spring Data JPA의 정렬 및 페이징
+    // Page 클래스 사용 시, Spring Data JPA에서는 본 쿼리 (컨텐츠 조회)와 totalCount 쿼리가 자동으로 조회됨
+    // @Query의 본 쿼리(컨텐츠 조회)에서 조인 등 복잡한 쿼리로 되어있을 시, count 쿼리도 복잡한 쿼리로 조회되기 때문에 성능저하가 되므로 따로 명시 (실무에서 중요!)
+    @Query(value="select m from Member m left join m.team t",
+            countQuery = "select count(m) from Member m")
+    Page<Member> findByAge(int age, Pageable pageable);
+    // Page를 Slice로 변환
+    //Slice<Member> findByAge(int age, Pageable pageable);
 
 }
