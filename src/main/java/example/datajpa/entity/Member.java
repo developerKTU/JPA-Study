@@ -11,6 +11,8 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 // 연관관계 필드(외래키, 참조키 등)는 되도록 명시 x
 @ToString(of = {"id", "username","age"})
+// Entity Graph에 이름을 부여할 수 있음
+@NamedEntityGraph(name = "Team.all", attributeNodes = @NamedAttributeNode("team"))
 public class Member {
 
     @Id @GeneratedValue
@@ -21,7 +23,7 @@ public class Member {
     private int age;
 
     // JPA에서 모든 연관관계는 다 지연로딩 (LAZY)로 설정한다.(실무에도 적용) -> EAGER로 하면 성능최적화가 매우 힘들다
-    // 지연로딩 : 클래스의 멤버만 일단 먼저 조회 (id, username, age), team은 가짜 객체로 가지고 있다가. team을 조회할때 그때 쿼리 한번 더 태움
+    // 지연로딩 : 클래스의 멤버만 일단 먼저 조회 (id, username, age), team은 가짜 객체로 가지고 있다가. 실제 team을 조회할때 그때 쿼리 한번 더 태움
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="team_id")
     private Team team;

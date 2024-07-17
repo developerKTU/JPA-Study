@@ -5,6 +5,7 @@ import example.datajpa.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,6 +29,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // Limit 조건
     List<Member> findTop3By();
 
+
     // @Query 어노테이션
     // Repository에 문자열로 쿼리를 작성하면(createQuery) 오타가 나도 컴파일러에서 오타를 잡아낼 수 없음
         // -> 이렇게 되면 고객이 해당 버튼을 눌렀을때 그때서야 에러가남 (큰일)
@@ -36,22 +38,27 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select m from Member m where m.username = :username and m.age = :age")
     List<Member> findMember(@Param("username") String username, @Param("age") int age);
 
+
     // username만 조회
     @Query("select m.username from Member m")
     List<String> findUsernameList();
+
 
     // DTO 이용
     @Query("select new example.datajpa.dto.MemberDTO(m.id, m.username, t.name) from Member m join m.team t")
     List<MemberDTO> findMemberDTO();
 
+
     // 컬렉션 파라미터 바인딩
     @Query("select m from Member m where m.username in :names")
     List<Member> findByNames(@Param("names") Collection<String> names);
+
 
     // 반환타입 (Spring JPA는 유연한 반환타입을 지원!)
     List<Member> findByUsername(String username);       // 반환타입 : 컬렉션
     Member findMemberByUsername(String username);       // 반환타입 : Member(단건)
     Optional<Member> findOptionalByUsername(String username);    // 반환타입 : Optional(단건)
+
 
     // Spring Data JPA의 정렬 및 페이징
     // Page 클래스 사용 시, Spring Data JPA에서는 본 쿼리 (컨텐츠 조회)와 totalCount 쿼리가 자동으로 조회됨
@@ -61,6 +68,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Page<Member> findByAge(int age, Pageable pageable);
     // Page를 Slice로 변환
     //Slice<Member> findByAge(int age, Pageable pageable);
+
 
     // 벌크성 수정 쿼리 : 한 건 한 건 조회하여 그 데이터를 업데이트하기 보다는 전체 데이터 (테이블)에 대해서 업데이트를 해야할 경우
     // bulk 수정 쿼리를 수행하게되면 바로 DB에 update를 치기때문에 영속성 컨텍스트는 이를 모르는 상태이다.
@@ -74,4 +82,32 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "WHERE m.age >= :age")
     int bulkAgePlus(@Param("age") int age);
 
+
+    // fetch join (복잡한 쿼리 및 기능의 경우 JPQL + fetch join 사용)
+    // fetch join : Member 엔티티를 조회할때 연관된 다른 엔티티 Team도 한번에 조회하는 것(지연로딩의 문제점인 N+1 문제 해결)
+    @Query("SELECT m" +
+            " FROM Member m" +
+            " LEFT JOIN FETCH m.team")
+    List<Member> findMemberFetchJoin();
+
+
+    // 매번 fetch join(JPQL)을 적는게 번거롭다면? (또는 간단한 조회 등 이런 경우 @EntityGraph + attributePaths 사용)
+    // 메소드 쿼리 등 @Query 사용하지 않는데, fetch join까지 깔끔하게 사용하고 싶다! ==> @EntityGraph
+    @Override   // 상위 인터페이스 JPARepository의 findAll 메서드를 재정의
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findAll();
+
+    // @EntityGraph 다른 사용 형태 1  -> JPQL fetch join 명시 안하는 경우
+    @Query("SELECT m" +
+            " FROM Member m")
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findMemberEntityGraph();
+
+    // @EntityGraph 다른 사용 형태 2 -> 메소드 쿼리 사용의 경우
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findKtuByUsername(@Param("username") String username);
+
+    // @EntityGraph 다른 사용 형태 3 -> Named Entitiy Graph (Member 엔티티의 @NamedEntityGraph 참고)
+    @EntityGraph("Team.all")
+    List<Member> findNaemdEGByUsername(@Param("username") String username);
 }

@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -240,6 +237,9 @@ class MemberRepositoryTest {
 
         // when
         int resultCount = memberRepository.bulkAgePlus(20);
+        // bulk update 수행 후 영속성 컨텍스트를 클리어
+        // em.flush();
+        // em.clear();
 
         List<Member> result = memberRepository.findByUsername("M5");
         Member member5 = result.get(0);
@@ -249,4 +249,75 @@ class MemberRepositoryTest {
         assertThat(resultCount).isEqualTo(3);
 
     }
+
+    @Test
+    public void findMemberLazy(){
+        // given
+        Team teamA = new Team("TeamA");
+        Team teamB = new Team("TeamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("Member1", 10, teamA);
+        Member member2 = new Member("Member2", 20, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        // 영속성 컨텍스트 클리어
+        em.flush();
+        em.clear();
+
+        // when
+        // select Member
+        List<Member> members = memberRepository.findAll();
+        for (Member member : members) {
+            System.out.println("member.getUsername() = " + member.getUsername());
+            // 지연로딩(fetch = FetchType.LAZY)
+            // Entity에서 fetch를 Lazy로 설정하면 일단 먼저 Member에 대한 필드만 가져오므로 Team객체는 null로 가져올 수 없으니 가짜 객체로 가져온다.(...$HibernateProxy$7ffISbXn)
+            System.out.println("member.getClass() = " + member.getTeam().getClass()); // 가짜 객체 : class example.datajpa.entity.Team$HibernateProxy$7ffISbXn
+            // 가짜 객체가 만들어진 상황에서 getName()을 하려하니 그때서야 Team 객체를 조회하는 쿼리가 수행된다. (이게 fetch join -> LAZY이다.)
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+
+        // 지연로딩의 문제점 << N+1 문제 : 10번의 select 쿼리 수행 시 가짜 객체를 실제로 조회하는 쿼리가 10번 더 실행되는 문제 >>
+        // 이를 fetch join으로 해결함.
+        List<Member> fetchMembers = memberRepository.findMemberFetchJoin();
+        for (Member fm : fetchMembers) {
+            System.out.println("fm.getUsername() = " + fm.getUsername());
+            // fetch join을 사용하면 member와 team을 한번에 조회할 수 있는 쿼리가 실행됨. (N+1 문제 해결)
+            System.out.println("fm.getTeam().getClass() = " + fm.getTeam().getClass());     // 실제 객체 : class example.datajpa.entity.Team (단 위 코드 없애거나 주석해야함)
+            System.out.println("fm.getTeam().getName() = " + fm.getTeam().getName());       // 실제 Team 객체의 getName() 메소드 수행
+        }
+    }
+
+    @Test
+    public void findAllEntityGraph(){
+        // given
+        Team teamA = new Team("TeamA");
+        Team teamB = new Team("TeamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("Member1", 10, teamA);
+        Member member2 = new Member("Member2", 20, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        // 영속성 컨텍스트 클리어
+        em.flush();
+        em.clear();
+
+        // when
+        List<Member> members = memberRepository.findAll();
+                                            // .findMemberEntityGraph();
+                                            // .findKtuByUsername();
+                                            // .findNaemdEGByUsername();
+        for (Member member : members) {
+            System.out.println("member.getUsername() = " + member.getUsername());
+            // @EntityGraph에 의해서 fetch join 수행
+            System.out.println("member.getClass() = " + member.getTeam().getClass());           // 실제 객체 : class example.datajpa.entity.Team
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+    }
+
 }
