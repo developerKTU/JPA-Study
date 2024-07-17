@@ -16,7 +16,7 @@ public class MemberQueryRepository {
     private final EntityManager em;
 
     List<Member> findAllMember(){
-        return em.createQuery("select m from Member m where m.username = '복잡한 쿼리는 이쪽에서...'")
+        return em.createQuery("select m from Member m where m.username = '복잡한 쿼리 및 로직 분리 사용자정의 레포지토리로 나눈다...'")
                 .getResultList();
     }
 
