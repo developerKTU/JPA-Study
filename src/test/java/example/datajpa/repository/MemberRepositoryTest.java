@@ -5,7 +5,6 @@ import example.datajpa.entity.Member;
 import example.datajpa.entity.Team;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,9 +48,9 @@ class MemberRepositoryTest {
         Member findMember = memberRepository.findById(savedMember.getId()).get();
 
         // 검증
-        Assertions.assertThat(findMember.getId()).isEqualTo(member.getId());
-        Assertions.assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
-        Assertions.assertThat(findMember).isEqualTo(member);
+        assertThat(findMember.getId()).isEqualTo(member.getId());
+        assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
+        assertThat(findMember).isEqualTo(member);
     }
 
     @Test
@@ -67,23 +66,23 @@ class MemberRepositoryTest {
         Member findMember1 = memberRepository.findById(member1.getId()).get();
         Member findMember2 = memberRepository.findById(member2.getId()).get();
 
-        Assertions.assertThat(findMember1).isEqualTo(member1);
-        Assertions.assertThat(findMember2).isEqualTo(member2);
+        assertThat(findMember1).isEqualTo(member1);
+        assertThat(findMember2).isEqualTo(member2);
 
         // 리스트 조회 검증
         List<Member> all = memberRepository.findAll();
-        Assertions.assertThat(all.size()).isEqualTo(2);
+        assertThat(all.size()).isEqualTo(2);
 
         // 카운트 검증
         long count = memberRepository.count();
-        Assertions.assertThat(count).isEqualTo(2);
+        assertThat(count).isEqualTo(2);
 
         // 삭제 검증
         memberRepository.delete(member1);
         memberRepository.delete(member2);
 
         long deletedCount = memberRepository.count();
-        Assertions.assertThat(deletedCount).isEqualTo(0);
+        assertThat(deletedCount).isEqualTo(0);
     }
 
     @Test
@@ -97,9 +96,9 @@ class MemberRepositoryTest {
         // 메소드 이름에 맞는 쿼리가 실행됨
         List<Member> result = memberRepository.findByUsernameAndAgeGreaterThan("M2", 15);
 
-        Assertions.assertThat(result.get(0).getUsername()).isEqualTo("M2");
-        Assertions.assertThat(result.get(0).getAge()).isEqualTo(20);
-        Assertions.assertThat(result.size()).isEqualTo(1);
+        assertThat(result.get(0).getUsername()).isEqualTo("M2");
+        assertThat(result.get(0).getAge()).isEqualTo(20);
+        assertThat(result.size()).isEqualTo(1);
     }
 
     @Test
@@ -117,7 +116,7 @@ class MemberRepositoryTest {
 
         List<Member> result = memberRepository.findMember("M2", 20);
 
-        Assertions.assertThat(result.get(0).getUsername()).isEqualTo("M2");
+        assertThat(result.get(0).getUsername()).isEqualTo("M2");
     }
 
     @Test
@@ -221,15 +220,15 @@ class MemberRepositoryTest {
         long totalElements = page.getTotalElements();
 
         // 현재 페이지의 데이터 갯수가 3개인가? true
-        Assertions.assertThat(contents.size()).isEqualTo(3);
+        assertThat(contents.size()).isEqualTo(3);
         // 총 데이터의 갯수는 5개인가? true
-        Assertions.assertThat(page.getTotalElements()).isEqualTo(5);    // Slice에선 지원 x
+        assertThat(page.getTotalElements()).isEqualTo(5);    // Slice에선 지원 x
         // 총 페이지 수는 2개인가? true (총 5개의 데이터에 3개씩 보여지므로 페이지는 2개가 나온다.)
-        Assertions.assertThat(page.getTotalPages()).isEqualTo(2);       // Slice에선 지원 x
+        assertThat(page.getTotalPages()).isEqualTo(2);       // Slice에선 지원 x
         // 첫번째 페이지인가? true
-        Assertions.assertThat(page.isFirst()).isTrue();
+        assertThat(page.isFirst()).isTrue();
         // 다음 페이지가 존재하는가? true
-        Assertions.assertThat(page.hasNext()).isTrue();
+        assertThat(page.hasNext()).isTrue();
 
     }
 
@@ -375,4 +374,48 @@ class MemberRepositoryTest {
         // @Repository 빈에 등록된 MemberQueryRepository 사용자 레포지토리를 직접 주입하여 사용
         List<Member> allMembers = memberQueryRepository.findAllMember();
     }
+
+    @Test
+    public void nativeQueryTest(){
+
+        // given
+        Member member1 = new Member("M1", 10, null);
+        memberRepository.save(member1);
+
+        em.flush();
+        em.clear();
+
+        // when
+        Member member = memberRepository.findNativeByUsername("M1");
+
+        // then
+        assertThat(member.getUsername()).isEqualTo("M1");
+    }
+
+    @Test
+    public void nativeProjectionTest(){
+
+        // given
+        Team teamA = new Team("teamA");
+        teamRepository.save(teamA);
+
+        Member member1 = new Member("M1", 10, teamA);
+        Member member2 = new Member("M2", 10, teamA);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        em.flush();
+        em.clear();
+
+        // when
+        Page<MemberProjection> result = memberRepository.findByNativeProjection(PageRequest.of(0, 10));
+        List<MemberProjection> content = result.getContent();
+
+        // then
+        for (MemberProjection memberProjection : content) {
+            System.out.println("memberProjection.getUsername() = " + memberProjection.getUsername());
+            System.out.println("memberProjection.getName() = " + memberProjection.getTeamName());
+        }
+    }
+
 }

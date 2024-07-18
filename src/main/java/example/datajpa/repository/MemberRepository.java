@@ -125,4 +125,21 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberCus
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<Member> findLockByUsername(String username);
 
+
+    // 네이티브 쿼리 : 가급적 네이티브 쿼리 대신 커스텀 레포지토리에서 Mybatis나 JDBC Template 사용하는걸 권장
+    // (웬만한 쿼리는 JPQL이나 QueryDSL로 해결)
+    @Query(value = "SELECT *" +
+            "         FROM Member " +
+            "        WHERE 1=1" +
+            "          AND  username = ?", nativeQuery = true)
+    Member findNativeByUsername(String username);
+
+    @Query(value = "SELECT m.member_id as id" +
+            "            , m.username" +
+            "            , t.name as teamName" +
+            "         FROM Member m " +
+            "         LEFT JOIN Team t",
+            countQuery = "SELECT COUNT(*) FROM Member",
+            nativeQuery = true)
+    Page<MemberProjection> findByNativeProjection(Pageable pageable);
 }

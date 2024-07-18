@@ -50,7 +50,7 @@ public class MemberController {
     }
 
 
-    @PostConstruct
+    //@PostConstruct
     public void init(){
 
         // 페이징 테스트를 위해 100명의 유저 insert
