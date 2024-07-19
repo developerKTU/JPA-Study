@@ -22,7 +22,7 @@ public class Member extends BaseEntity {
     private String username;
     private int age;
 
-    // JPA에서 모든 연관관계는 다 지연로딩 (LAZY)로 설정한다.(실무에도 적용) -> EAGER로 하면 성능최적화가 매우 힘들다
+    // JPA에서 모든 연관관계는 다 지연로딩 (LAZY)로 설정한다.(실무에도 적용) -> EAGER로 하면 성능 최적화가 매우 힘들다
     // 지연로딩 : 클래스의 멤버만 일단 먼저 조회 (id, username, age), team은 가짜 객체로 가지고 있다가. 실제 team을 조회할때 그때 쿼리 한번 더 태움
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="team_id")
