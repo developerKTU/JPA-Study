@@ -17,7 +17,7 @@ import java.util.List;
 class MemberTest {
 
     // 생성자 주입
-    private MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
     @Autowired
     public MemberTest(MemberRepository memberRepository){
         this.memberRepository = memberRepository;
