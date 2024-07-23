@@ -51,7 +51,7 @@ public class Member extends BaseEntity {
         }
     }
 
-    // 팀이 변결되었을 경우, 연관 되어있는 다른 테이블의 team도 같이 변경
+    // 팀이 변경되었을 경우, 연관 되어있는 다른 테이블의 team도 같이 변경
     public void changeTeam(Team team){
         this.team = team;
         team.getMembers().add(this);
