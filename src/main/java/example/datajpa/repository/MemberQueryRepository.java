@@ -2,6 +2,7 @@ package example.datajpa.repository;
 
 import example.datajpa.entity.Member;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +14,8 @@ import java.util.List;
 // 로직에 따라 클래스를 따로 만들어주는 것이 깔끔하고 아케텍쳐 상으로도 알맞는 코드가 된다.
 public class MemberQueryRepository {
 
-    private final EntityManager em;
+    @PersistenceContext
+    private EntityManager em;
 
     List<Member> findAllMember(){
         return em.createQuery("select m from Member m where m.username = '복잡한 쿼리 및 로직 분리 사용자정의 레포지토리로 나눈다...'")
