@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
-// Junit5 + Stringboot 조합에선 @SpringBootTest 어노테이션만 명시해도 됨
+// Junit5 + Stringboot 조합에선 @RunWith 없이 @SpringBootTest 어노테이션만 명시해도 됨
 @SpringBootTest
 // JPA의 모든 데이터 변경은 트랜잭셔널 내에서 이루어져야하기 때문에 어노테이션 명시
 @Transactional
