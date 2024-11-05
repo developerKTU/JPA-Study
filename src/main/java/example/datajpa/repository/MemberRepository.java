@@ -94,6 +94,7 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberCus
 
 
     // 매번 fetch join(JPQL)을 적는게 번거롭다면? (또는 간단한 조회 등 이런 경우 @EntityGraph + attributePaths 사용)
+    // attributePaths에 명시한 연관 엔티티만 즉시 조회.
     // 메소드 쿼리 등 @Query 사용하지 않는데, fetch join까지 깔끔하게 사용하고 싶다! ==> @EntityGraph
     @Override   // 상위 인터페이스 JPARepository의 findAll 메서드를 재정의
     @EntityGraph(attributePaths = {"team"})
